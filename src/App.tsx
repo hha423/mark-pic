@@ -471,8 +471,8 @@ const poetry = {
 
             {activeTab === 'preview' && (
               <div className="h-full flex flex-col">
-                <div className="flex justify-between items-center px-3 py-2 border-b border-gray-300 bg-opacity-80 backdrop-blur-sm sticky top-0 z-10 bg-white dark:bg-gray-800 dark:border-gray-700">
-                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <div className={`flex justify-between items-center px-3 py-2 border-b border-gray-300 bg-opacity-80 backdrop-blur-sm sticky top-0 z-10 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'}`}>
+                  <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     预览
                   </div>
                   <div className="flex space-x-2">
