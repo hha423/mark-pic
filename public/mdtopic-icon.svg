@@ -1,0 +1,32 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 简洁的渐变 -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 主背景 - 简洁的圆角正方形 -->
+  <rect x="2" y="2" width="28" height="28" rx="8" fill="url(#bg)" />
+  
+  <!-- 文档图标 - 简化设计 -->
+  <rect x="8" y="6" width="16" height="20" rx="2" fill="white" opacity="0.95" />
+  
+  <!-- Markdown # 符号 - 更粗更清晰 -->
+  <g fill="#6366f1">
+    <!-- 垂直线 -->
+    <rect x="11" y="10" width="2" height="10" rx="1" />
+    <rect x="15" y="10" width="2" height="10" rx="1" />
+    <!-- 水平线 -->
+    <rect x="9" y="13" width="8" height="1.5" rx="0.75" />
+    <rect x="9" y="16.5" width="8" height="1.5" rx="0.75" />
+  </g>
+  
+  <!-- 简单的图片图标 -->
+  <g opacity="0.8">
+    <rect x="19" y="11" width="4" height="3" rx="0.5" fill="none" stroke="#8b5cf6" stroke-width="1" />
+    <circle cx="20.5" cy="12.5" r="0.5" fill="#8b5cf6" />
+    <path d="M19.5 13.5 L20.5 12.8 L21.5 13.2 L22.5 12.5 V13.5 H19.5 Z" fill="#8b5cf6" />
+  </g>
+</svg>
