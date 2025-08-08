@@ -5,6 +5,7 @@ import { ImagePreview, type ImagePreviewRef } from '@/components/ImagePreview'
 import { Header } from '@/components/Header'
 import { ControlPanel, LIGHT_GRADIENTS, DARK_GRADIENTS } from '@/components/ControlPanel'
 import { ToastContainer, type ToastProps } from '@/components/Toast'
+import { MobileWarning } from '@/components/MobileWarning'
 
 export interface ImageConfig {
   background: {
@@ -421,6 +422,9 @@ const poetry = {
       
       {/* Toast 通知容器 */}
       <ToastContainer toasts={toasts} onClose={removeToast} isDarkMode={isDarkMode} />
+      
+      {/* 移动端访问提示 */}
+      <MobileWarning isDarkMode={isDarkMode} />
     </div>
   )
 }
