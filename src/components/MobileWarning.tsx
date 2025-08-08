@@ -10,6 +10,7 @@ export const MobileWarning: React.FC<MobileWarningProps> = ({ isDarkMode = false
   const [isVisible, setIsVisible] = useState(true)
   const [copied, setCopied] = useState(false)
   const [currentUrl, setCurrentUrl] = useState('')
+  const [isLandscape, setIsLandscape] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
@@ -24,6 +25,10 @@ export const MobileWarning: React.FC<MobileWarningProps> = ({ isDarkMode = false
       // 检测触摸设备
       const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
       
+      // 检测横屏模式
+      const landscape = window.innerWidth > window.innerHeight && window.innerHeight <= 500
+      setIsLandscape(landscape)
+      
       // 综合判断
       const mobile = isMobileUA || (isSmallScreen && isTouchDevice)
       setIsMobile(mobile)
@@ -32,9 +37,13 @@ export const MobileWarning: React.FC<MobileWarningProps> = ({ isDarkMode = false
     checkMobile()
     setCurrentUrl(window.location.href)
     
-    // 监听窗口大小变化
+    // 监听窗口大小变化和方向变化
     window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    window.addEventListener('orientationchange', checkMobile)
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+      window.removeEventListener('orientationchange', checkMobile)
+    }
   }, [])
 
   const handleCopyUrl = async () => {
@@ -61,8 +70,14 @@ export const MobileWarning: React.FC<MobileWarningProps> = ({ isDarkMode = false
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className={`w-full max-w-sm max-h-[90vh] overflow-y-auto rounded-lg shadow-2xl p-4 relative ${
+    <div className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm ${
+      isLandscape ? 'p-2' : 'p-3 sm:p-4'
+    }`}>
+      <div className={`w-full ${isLandscape ? 'max-w-md' : 'max-w-sm'} ${
+        isLandscape ? 'max-h-[95vh]' : 'max-h-[85vh] sm:max-h-[90vh]'
+      } overflow-y-auto rounded-lg shadow-2xl ${
+        isLandscape ? 'p-2' : 'p-3 sm:p-4'
+      } relative ${
         isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
       }`}>
         <button
@@ -76,50 +91,64 @@ export const MobileWarning: React.FC<MobileWarningProps> = ({ isDarkMode = false
           <X className="w-5 h-5" />
         </button>
 
-        <div className="text-center space-y-3">
-          <div className="flex justify-center space-x-3 mb-3">
-            <div className={`p-2 rounded-full ${
+        <div className={`text-center ${
+          isLandscape ? 'space-y-1.5' : 'space-y-2 sm:space-y-3'
+        }`}>
+          <div className={`flex justify-center space-x-2 sm:space-x-3 ${
+            isLandscape ? 'mb-1.5' : 'mb-2 sm:mb-3'
+          }`}>
+            <div className={`p-2 sm:p-2.5 rounded-full ${
               isDarkMode ? 'bg-red-900/30' : 'bg-red-100'
             }`}>
-              <Smartphone className={`w-6 h-6 ${
+              <Smartphone className={`w-6 h-6 sm:w-7 sm:h-7 ${
                 isDarkMode ? 'text-red-400' : 'text-red-600'
               }`} />
             </div>
             <div className="flex items-center">
-              <div className={`w-6 h-0.5 ${
+              <div className={`w-5 sm:w-7 h-0.5 ${
                 isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
               }`}></div>
             </div>
-            <div className={`p-2 rounded-full ${
+            <div className={`p-2 sm:p-2.5 rounded-full ${
               isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'
             }`}>
-              <Monitor className={`w-6 h-6 ${
+              <Monitor className={`w-6 h-6 sm:w-7 sm:h-7 ${
                 isDarkMode ? 'text-blue-400' : 'text-blue-600'
               }`} />
             </div>
           </div>
 
-          <h2 className={`text-lg font-bold ${
+          <h2 className={`${
+            isLandscape ? 'text-sm' : 'text-base sm:text-lg'
+          } font-bold ${
             isDarkMode ? 'text-white' : 'text-gray-800'
           }`}>
             请使用电脑访问
           </h2>
           
-          <p className={`text-sm leading-relaxed ${
+          <p className={`${
+            isLandscape ? 'text-xs leading-tight' : 'text-xs sm:text-sm leading-relaxed'
+          } ${
             isDarkMode ? 'text-gray-300' : 'text-gray-600'
           }`}>
             MarkPic 专为桌面端设计，需要较大屏幕空间提供最佳体验。
           </p>
 
-          <div className={`p-3 rounded-lg ${
+          <div className={`${
+            isLandscape ? 'p-1.5' : 'p-2 sm:p-3'
+          } rounded-lg ${
             isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'
           }`}>
-            <h3 className={`text-sm font-medium mb-2 ${
+            <h3 className={`text-xs ${
+              isLandscape ? 'font-medium mb-1' : 'sm:text-sm font-medium mb-1 sm:mb-2'
+            } ${
               isDarkMode ? 'text-gray-200' : 'text-gray-700'
             }`}>
               推荐使用：
             </h3>
-            <ul className={`text-xs space-y-1 ${
+            <ul className={`text-xs ${
+              isLandscape ? 'space-y-0' : 'space-y-0.5 sm:space-y-1'
+            } ${
               isDarkMode ? 'text-gray-400' : 'text-gray-600'
             }`}>
               <li>• 桌面电脑或笔记本</li>
@@ -128,17 +157,23 @@ export const MobileWarning: React.FC<MobileWarningProps> = ({ isDarkMode = false
             </ul>
           </div>
 
-          <div className={`p-3 rounded-lg border ${
+          <div className={`${
+            isLandscape ? 'p-1.5' : 'p-2 sm:p-3'
+          } rounded-lg border ${
             isDarkMode ? 'bg-gray-700/30 border-gray-600' : 'bg-gray-50 border-gray-200'
           }`}>
-            <div className={`text-xs mb-2 ${
+            <div className={`text-xs ${
+              isLandscape ? 'mb-1' : 'mb-1 sm:mb-2'
+            } ${
               isDarkMode ? 'text-gray-400' : 'text-gray-600'
             }`}>
               电脑端访问地址：
             </div>
             <button
               onClick={handleCopyUrl}
-              className={`w-full flex items-center gap-2 p-2 rounded text-xs transition-colors ${
+              className={`w-full flex items-center gap-1 sm:gap-2 ${
+                isLandscape ? 'p-1' : 'p-1.5 sm:p-2'
+              } rounded text-xs transition-colors ${
                 isDarkMode
                   ? 'bg-gray-600 hover:bg-gray-500 text-gray-200'
                   : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
@@ -150,9 +185,9 @@ export const MobileWarning: React.FC<MobileWarningProps> = ({ isDarkMode = false
               </span>
               <div className="flex-shrink-0">
                 {copied ? (
-                  <Check className="w-4 h-4 text-green-500" />
+                  <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
                 ) : (
-                  <Copy className="w-4 h-4" />
+                  <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
                 )}
               </div>
             </button>
@@ -167,7 +202,9 @@ export const MobileWarning: React.FC<MobileWarningProps> = ({ isDarkMode = false
 
           <button
             onClick={() => setIsVisible(false)}
-            className={`w-full py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            className={`w-full ${
+              isLandscape ? 'py-1.5 px-3' : 'py-2 px-3 sm:px-4'
+            } rounded-md text-xs sm:text-sm font-medium transition-colors ${
               isDarkMode
                 ? 'bg-blue-600 hover:bg-blue-700 text-white'
                 : 'bg-blue-500 hover:bg-blue-600 text-white'
