@@ -10,16 +10,19 @@ interface ImagePreviewProps {
   markdown: string
   config: ImageConfig
   isDarkMode?: boolean
+  isDesktop?: boolean
 }
 
 export interface ImagePreviewRef {
   getPreviewElement: () => HTMLDivElement | null
 }
 
-export const ImagePreview = forwardRef<ImagePreviewRef, ImagePreviewProps>(({ markdown, config, isDarkMode = false }, ref) => {
+export const ImagePreview = forwardRef<ImagePreviewRef, ImagePreviewProps>(({ markdown, config, isDarkMode = false, isDesktop = true }, ref) => {
   const previewRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useImperativeHandle(ref, () => ({
+    // 返回预览元素，而不是外层容器
     getPreviewElement: () => previewRef.current
   }))
 
@@ -62,18 +65,31 @@ export const ImagePreview = forwardRef<ImagePreviewRef, ImagePreviewProps>(({ ma
   const backgroundStyle = getBackgroundStyle()
   
   return (
-    <div className={`w-full h-full p-6 overflow-auto ${
+    <div className={`w-full h-full overflow-auto ${
       isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
     }`}>
-      <div className="flex justify-center items-start py-8">
+      <div
+        ref={containerRef}
+        className={`${isDesktop ? 'justify-center' : ''} items-start p-4 min-h-full ${!isDesktop ? 'overflow-x-auto' : ''}`}
+      >
         <div
           ref={previewRef}
-          className={`${backgroundStyle.className} rounded-xl shadow-lg p-8 inline-block`}
-          style={backgroundStyle.style}
+          className={`${backgroundStyle.className} rounded-xl shadow-lg inline-block ${isDesktop ? 'mx-auto' : 'ml-0'}`}
+          style={{
+            ...backgroundStyle.style,
+            minHeight: '80%',
+            padding: `${Math.max(8, config.layout.margin)}px`,
+            width: `${config.layout.width + (config.layout.margin * 2)}px`
+          }}
         >
           <div
-            style={cardStyle}
-            className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-lg shadow-inner`}
+            style={{
+              ...cardStyle,
+              width: cardStyle.width,
+              padding: cardStyle.padding,
+              margin: 0
+            }}
+            className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-lg shadow-inner overflow-hidden`}
           >
             <div className={`prose ${isDarkMode ? 'prose-invert' : 'prose-gray'} max-w-none`}>
               <ReactMarkdown

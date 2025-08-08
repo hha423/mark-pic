@@ -128,32 +128,32 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, onChange, is
       <div className={`flex border-b transition-colors duration-300 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
         <button
           onClick={() => setActiveTab('background')}
-          className={`flex-1 flex items-center justify-center space-x-2 py-3 text-sm font-medium transition-all duration-200 ${activeTab === 'background'
+          className={`flex-1 flex items-center justify-center space-x-1 md:space-x-2 py-3 text-xs md:text-sm font-medium transition-all duration-200 ${activeTab === 'background'
               ? `text-blue-600 border-b-2 border-blue-600 ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`
               : isDarkMode
                 ? 'text-gray-400 hover:text-gray-200'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
         >
-          <Palette className="w-4 h-4" />
+          <Palette className="w-3 h-3 md:w-4 md:h-4" />
           <span>背景样式</span>
         </button>
         <button
           onClick={() => setActiveTab('layout')}
-          className={`flex-1 flex items-center justify-center space-x-2 py-3 text-sm font-medium transition-all duration-200 ${activeTab === 'layout'
+          className={`flex-1 flex items-center justify-center space-x-1 md:space-x-2 py-3 text-xs md:text-sm font-medium transition-all duration-200 ${activeTab === 'layout'
               ? `text-blue-600 border-b-2 border-blue-600 ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`
               : isDarkMode
                 ? 'text-gray-400 hover:text-gray-200'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
         >
-          <Sliders className="w-4 h-4" />
+          <Sliders className="w-3 h-3 md:w-4 md:h-4" />
           <span>布局设置</span>
         </button>
       </div>
 
       {/* 内容区域 */}
-      <div className="flex-1 p-4 overflow-y-auto">
+      <div className="flex-1 p-3 md:p-4 overflow-y-auto">
         {activeTab === 'background' && (
           <div className="space-y-6">
             {/* 背景类型选择 */}
@@ -191,7 +191,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, onChange, is
               <div>
                 <label className={`block text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
                   }`}>选择预设</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 md:gap-3">
                   {PRESET_GRADIENTS.map((gradient, index) => (
                     <button
                       key={index}
@@ -215,8 +215,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, onChange, is
 
             {/* 自定义渐变 */}
             {config.background.type === 'custom' && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3 md:space-y-4">
+                <div className="grid grid-cols-2 gap-2 md:gap-4">
                   <div>
                     <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
                       }`}>起始颜色</label>
@@ -258,7 +258,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, onChange, is
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
                     }`}>渐变方向</label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-1 md:gap-2">
                     {GRADIENT_DIRECTIONS.map((dir) => (
                       <button
                         key={dir.value}
@@ -288,7 +288,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, onChange, is
         )}
 
         {activeTab === 'layout' && (
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {/* 宽度设置 */}
             <div>
               <label className={`flex justify-between text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
@@ -334,7 +334,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, onChange, is
               </label>
               <input
                 type="range"
-                min="0"
+                min="10"
                 max="60"
                 step="5"
                 value={config.layout.margin}

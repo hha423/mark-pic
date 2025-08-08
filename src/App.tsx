@@ -6,6 +6,7 @@ import { Header } from '@/components/Header'
 import { ControlPanel, LIGHT_GRADIENTS, DARK_GRADIENTS } from '@/components/ControlPanel'
 import { ToastContainer, type ToastProps } from '@/components/Toast'
 import { MobileWarning } from '@/components/MobileWarning'
+import { Edit, Eye, Settings, Copy, Download } from 'lucide-react'
 
 export interface ImageConfig {
   background: {
@@ -94,12 +95,44 @@ const poetry = {
     // 如果没有保存的设置，则根据系统偏好设置
     return window.matchMedia('(prefers-color-scheme: dark)').matches
   })
+  const [isMobile, setIsMobile] = useState(false)
+  const [activeTab, setActiveTab] = useState<'editor' | 'preview' | 'settings'>('editor')
   const previewRef = useRef<ImagePreviewRef>(null)
+
+  // 检测移动设备
+  useEffect(() => {
+    const checkMobile = () => {
+      // 检测移动设备的多种方法
+      const userAgent = navigator.userAgent.toLowerCase()
+      const mobileKeywords = ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone']
+      const isMobileUA = mobileKeywords.some(keyword => userAgent.includes(keyword))
+
+      // 检测屏幕尺寸
+      const isSmallScreen = window.innerWidth <= 768
+
+      // 检测触摸设备
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+
+      // 综合判断
+      const mobile = isMobileUA || (isSmallScreen && isTouchDevice)
+      setIsMobile(mobile)
+    }
+
+    checkMobile()
+
+    // 监听窗口大小变化和方向变化
+    window.addEventListener('resize', checkMobile)
+    window.addEventListener('orientationchange', checkMobile)
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+      window.removeEventListener('orientationchange', checkMobile)
+    }
+  }, [])
 
   // 监听系统主题变化
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    
+
     const handleChange = (e: MediaQueryListEvent) => {
       // 只有在用户没有手动设置过主题时才自动跟随系统
       const savedTheme = localStorage.getItem('markpic-theme')
@@ -107,7 +140,7 @@ const poetry = {
         setIsDarkMode(e.matches)
       }
     }
-    
+
     mediaQuery.addEventListener('change', handleChange)
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [])
@@ -115,12 +148,9 @@ const poetry = {
   // 智能切换预设背景：当暗黑模式切换时，自动切换到对应的预设
   useEffect(() => {
     if (config.background.type === 'preset' && config.background.preset) {
-      // 查找当前预设在亮色模式下的索引
       const lightIndex = LIGHT_GRADIENTS.findIndex((g: any) => g.class === config.background.preset)
-      // 查找当前预设在暗色模式下的索引
       const darkIndex = DARK_GRADIENTS.findIndex((g: any) => g.class === config.background.preset)
-      
-      // 如果找到了对应的索引，则切换到对应模式的相同索引预设
+
       if (isDarkMode && lightIndex !== -1 && lightIndex < DARK_GRADIENTS.length) {
         setConfig(prev => ({
           ...prev,
@@ -144,7 +174,6 @@ const poetry = {
   const handleToggleDarkMode = () => {
     const newDarkMode = !isDarkMode
     setIsDarkMode(newDarkMode)
-    // 保存用户的主题偏好
     localStorage.setItem('markpic-theme', newDarkMode ? 'dark' : 'light')
   }
 
@@ -165,72 +194,78 @@ const poetry = {
     setToasts(prev => prev.filter(toast => toast.id !== id))
   }
 
-  const handleCopy = async () => {
+  // 生成图片并执行后续操作的通用函数
+  const handleImageAction = async (actionType: 'copy' | 'export') => {
     try {
       const element = previewRef.current?.getPreviewElement()
       if (!element) return
-      
+
+      // 确保捕获完整内容
       const dataUrl = await toPng(element, {
         quality: 1,
         pixelRatio: 2,
         skipFonts: true,
+        cacheBust: true,
+        canvasWidth: element.offsetWidth,
+        canvasHeight: element.offsetHeight,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left'
+        },
         filter: (node) => {
           const linkElement = node as HTMLLinkElement
+          // 排除monaco编辑器相关元素
           if (node.tagName === 'LINK' && linkElement.href && linkElement.href.includes('monaco-editor')) {
             return false
           }
           return true
         }
       })
-      
-      // 将data URL转换为blob
-      const response = await fetch(dataUrl)
-      const blob = await response.blob()
-      
-      // 复制到剪贴板
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob })
-      ])
-      
-      showToast('success', '复制成功', '图片已复制到剪贴板！')
+
+      // 下载图片的辅助函数
+      const downloadImage = () => {
+        const link = document.createElement('a')
+        link.download = `markpic-${Date.now()}.png`
+        link.href = dataUrl
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      }
+
+      // 根据操作类型和设备类型执行不同操作
+      if (actionType === 'export' || isMobile) {
+        // 导出操作或移动设备：直接下载
+        downloadImage()
+        showToast('success', actionType === 'export' ? '导出成功' : '图片已生成', '已保存到下载文件夹')
+      } else {
+        // 复制操作（桌面端）：尝试复制到剪贴板
+        try {
+          // 将data URL转换为blob
+          const response = await fetch(dataUrl)
+          const blob = await response.blob()
+
+          // 复制到剪贴板
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob })
+          ])
+
+          showToast('success', '复制成功', '图片已复制到剪贴板！')
+        } catch (clipboardError) {
+          console.error('剪贴板操作失败:', clipboardError)
+
+          // 剪贴板API失败时，提供下载选项作为备选
+          downloadImage()
+          showToast('warning', '复制失败，已下载图片', '请检查浏览器权限')
+        }
+      }
     } catch (error) {
-      console.error('复制失败:', error)
-      showToast('error', '复制失败', '请重试或检查浏览器权限')
+      console.error(`${actionType === 'copy' ? '复制' : '导出'}失败:`, error)
+      showToast('error', `${actionType === 'copy' ? '复制' : '导出'}失败`, '请重试或检查浏览器兼容性')
     }
   }
 
-  const handleExport = async () => {
-    try {
-      const element = previewRef.current?.getPreviewElement()
-      if (!element) return
-      
-      const dataUrl = await toPng(element, {
-        quality: 1,
-        pixelRatio: 2,
-        skipFonts: true,
-        filter: (node) => {
-          const linkElement = node as HTMLLinkElement
-          if (node.tagName === 'LINK' && linkElement.href && linkElement.href.includes('monaco-editor')) {
-            return false
-          }
-          return true
-        }
-      })
-      
-      // 创建下载链接
-      const link = document.createElement('a')
-      link.download = `markpic-${Date.now()}.png`
-      link.href = dataUrl
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      
-      showToast('success', '导出成功', '图片已保存到下载文件夹')
-    } catch (error) {
-      console.error('导出失败:', error)
-      showToast('error', '导出失败', '请重试或检查浏览器权限')
-    }
-  }
+  const handleCopy = () => handleImageAction('copy')
+  const handleExport = () => handleImageAction('export')
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true)
@@ -239,13 +274,13 @@ const poetry = {
 
   const handleMouseMove = (e: MouseEvent) => {
     if (!isDragging) return
-    
+
     const container = document.querySelector('.main-container') as HTMLElement
     if (!container) return
-    
+
     const containerRect = container.getBoundingClientRect()
     const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100
-    
+
     // 如果拖动到折叠阈值以下，启动延迟折叠
     if (newWidth < LAYOUT_CONSTANTS.COLLAPSE_THRESHOLD) {
       if (!collapseTimer) {
@@ -265,10 +300,10 @@ const poetry = {
         setCollapseTimer(null)
       }
     }
-    
+
     // 显示/隐藏折叠警告
     setShowCollapseWarning(newWidth < LAYOUT_CONSTANTS.WARNING_THRESHOLD)
-    
+
     // 限制宽度在最小值到最大值之间
     const clampedWidth = Math.max(
       LAYOUT_CONSTANTS.MIN_EDITOR_WIDTH,
@@ -317,112 +352,229 @@ const poetry = {
         onExport={handleExport}
         isDarkMode={isDarkMode}
         onToggleDarkMode={handleToggleDarkMode}
+        isMobile={isMobile}
       />
-      
-      <div className="flex-1 flex overflow-hidden main-container">
-        {/* 左侧编辑器 */}
-        {!editorCollapsed && (
-          <div
-            className={`flex-shrink-0 border-r ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}
-            style={{ width: `${editorWidth}%` }}
-          >
-            <MarkdownEditor
-              value={markdown}
-              onChange={setMarkdown}
-              onToggleCollapse={() => setEditorCollapsed(true)}
-              isDarkMode={isDarkMode}
-            />
-          </div>
-        )}
-        
-        {/* 折叠后的编辑器按钮 */}
-        {editorCollapsed && (
-          <div className={`w-12 border-r flex-shrink-0 flex flex-col items-center justify-start pt-4 ${
-            isDarkMode
+
+      {/* 桌面端布局 */}
+      {!isMobile && (
+        <div className="flex-1 flex overflow-hidden main-container">
+          {/* 左侧编辑器 */}
+          {!editorCollapsed && (
+            <div
+              className={`flex-shrink-0 border-r ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}
+              style={{ width: `${editorWidth}%` }}
+            >
+              <MarkdownEditor
+                value={markdown}
+                onChange={setMarkdown}
+                onToggleCollapse={() => setEditorCollapsed(true)}
+                isDarkMode={isDarkMode}
+              />
+            </div>
+          )}
+
+          {/* 折叠后的编辑器按钮 */}
+          {editorCollapsed && (
+            <div className={`w-12 border-r flex-shrink-0 flex flex-col items-center justify-start pt-4 ${isDarkMode
               ? 'border-gray-700 bg-gray-800'
               : 'border-gray-200 bg-white'
-          }`}>
-            <button
-              onClick={() => {
-                setEditorCollapsed(false)
-                setEditorWidth(LAYOUT_CONSTANTS.DEFAULT_EDITOR_WIDTH)
-              }}
-              className={`p-2 rounded-md transition-colors ${
-                isDarkMode
+              }`}>
+              <button
+                onClick={() => {
+                  setEditorCollapsed(false)
+                  setEditorWidth(LAYOUT_CONSTANTS.DEFAULT_EDITOR_WIDTH)
+                }}
+                className={`p-2 rounded-md transition-colors ${isDarkMode
                   ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
                   : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-              }`}
-              title="展开编辑器"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        )}
-        
-        {/* 可拖动的分隔条 */}
-        {!editorCollapsed && (
-          <div className="relative flex-shrink-0">
-            <div
-              className={`w-1 h-full cursor-col-resize flex-shrink-0 transition-all duration-200 relative group ${
-                showCollapseWarning
+                  }`}
+                title="展开编辑器"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          {/* 可拖动的分隔条 */}
+          {!editorCollapsed && (
+            <div className="relative flex-shrink-0">
+              <div
+                className={`w-1 h-full cursor-col-resize flex-shrink-0 transition-all duration-200 relative group ${showCollapseWarning
                   ? 'bg-orange-400 hover:bg-orange-500'
                   : isDarkMode
                     ? 'bg-gray-600 hover:bg-blue-400'
                     : 'bg-gray-200 hover:bg-blue-400'
-              }`}
-              onMouseDown={handleMouseDown}
-            >
-              <div
-                className={`absolute inset-y-0 -left-2 -right-2 transition-colors ${
-                  showCollapseWarning
+                  }`}
+                onMouseDown={handleMouseDown}
+              >
+                <div
+                  className={`absolute inset-y-0 -left-2 -right-2 transition-colors ${showCollapseWarning
                     ? 'group-hover:bg-orange-400/20'
                     : 'group-hover:bg-blue-400/20'
-                }`}
-                onMouseDown={handleMouseDown}
-              ></div>
+                    }`}
+                  onMouseDown={handleMouseDown}
+                ></div>
+              </div>
+
+              {/* 折叠警告提示 */}
+              {showCollapseWarning && (
+                <div className={`absolute top-1/2 left-2 transform -translate-y-1/2 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-10 pointer-events-none transition-colors ${collapseTimer ? 'bg-red-500' : 'bg-orange-500'
+                  }`}>
+                  {collapseTimer ? '即将折叠编辑器...' : '继续向左拖动将折叠编辑器'}
+                  <div className={`absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent ${collapseTimer ? 'border-r-red-500' : 'border-r-orange-500'
+                    }`}></div>
+                </div>
+              )}
             </div>
-            
-            {/* 折叠警告提示 */}
-            {showCollapseWarning && (
-              <div className={`absolute top-1/2 left-2 transform -translate-y-1/2 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-10 pointer-events-none transition-colors ${
-                collapseTimer ? 'bg-red-500' : 'bg-orange-500'
-              }`}>
-                {collapseTimer ? '即将折叠编辑器...' : '继续向左拖动将折叠编辑器'}
-                <div className={`absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent ${
-                  collapseTimer ? 'border-r-red-500' : 'border-r-orange-500'
-                }`}></div>
+          )}
+
+          {/* 右侧预览 */}
+          <div className="flex-1 min-w-0">
+            <ImagePreview
+              ref={previewRef}
+              markdown={markdown}
+              config={config}
+              isDarkMode={isDarkMode}
+              isDesktop={true}
+            />
+          </div>
+
+          {/* 右侧控制面板 */}
+          {showControls && (
+            <div className={`w-80 border-l flex-shrink-0 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+              <ControlPanel
+                config={config}
+                onChange={setConfig}
+                isDarkMode={isDarkMode}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 移动端Tab布局 */}
+      {isMobile && (
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Tab内容区域 */}
+          <div className="flex-1 overflow-hidden">
+            {activeTab === 'editor' && (
+              <div className="h-full">
+                <MarkdownEditor
+                  value={markdown}
+                  onChange={setMarkdown}
+                  isDarkMode={isDarkMode}
+                />
+              </div>
+            )}
+
+            {activeTab === 'preview' && (
+              <div className="h-full flex flex-col">
+                <div className="flex justify-between items-center px-3 py-2 border-b border-gray-300 bg-opacity-80 backdrop-blur-sm sticky top-0 z-10 bg-white dark:bg-gray-800 dark:border-gray-700">
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    预览
+                  </div>
+                  <div className="flex space-x-2">
+                    {
+                      false && (
+                        <button
+                          onClick={handleCopy}
+                          className={`flex items-center space-x-1 px-3 py-1.5 text-xs rounded-md transition-all duration-200 ${isDarkMode
+                            ? 'bg-gray-700 text-gray-200 hover:bg-gray-600'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>复制</span>
+                        </button>
+                      )
+                    }
+                    <button
+                      onClick={handleExport}
+                      className="flex items-center space-x-1 px-3 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-all duration-200"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>导出</span>
+                    </button>
+                  </div>
+                </div>
+                <div className="flex-1 overflow-auto">
+                  <ImagePreview
+                    ref={previewRef}
+                    markdown={markdown}
+                    config={config}
+                    isDarkMode={isDarkMode}
+                    isDesktop={false}
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'settings' && (
+              <div className="h-full">
+                <ControlPanel
+                  config={config}
+                  onChange={setConfig}
+                  isDarkMode={isDarkMode}
+                />
               </div>
             )}
           </div>
-        )}
-        
-        {/* 右侧预览 */}
-        <div className="flex-1 min-w-0">
-          <ImagePreview
-            ref={previewRef}
-            markdown={markdown}
-            config={config}
-            isDarkMode={isDarkMode}
-          />
-        </div>
-        
-        {/* 右侧控制面板 */}
-        {showControls && (
-          <div className={`w-80 border-l flex-shrink-0 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <ControlPanel
-              config={config}
-              onChange={setConfig}
-              isDarkMode={isDarkMode}
-            />
+
+          {/* 底部Tab导航 */}
+          <div className={`flex border-t ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'}`}>
+            <button
+              onClick={() => setActiveTab('editor')}
+              className={`flex-1 py-3 flex flex-col items-center justify-center space-y-1 transition-colors ${activeTab === 'editor'
+                ? isDarkMode
+                  ? 'text-blue-400 bg-gray-700'
+                  : 'text-blue-600 bg-gray-100'
+                : isDarkMode
+                  ? 'text-gray-400'
+                  : 'text-gray-500'
+                }`}
+            >
+              <Edit className="w-5 h-5" />
+              <span className="text-xs">编辑</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('preview')}
+              className={`flex-1 py-3 flex flex-col items-center justify-center space-y-1 transition-colors ${activeTab === 'preview'
+                ? isDarkMode
+                  ? 'text-blue-400 bg-gray-700'
+                  : 'text-blue-600 bg-gray-100'
+                : isDarkMode
+                  ? 'text-gray-400'
+                  : 'text-gray-500'
+                }`}
+            >
+              <Eye className="w-5 h-5" />
+              <span className="text-xs">预览</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`flex-1 py-3 flex flex-col items-center justify-center space-y-1 transition-colors ${activeTab === 'settings'
+                ? isDarkMode
+                  ? 'text-blue-400 bg-gray-700'
+                  : 'text-blue-600 bg-gray-100'
+                : isDarkMode
+                  ? 'text-gray-400'
+                  : 'text-gray-500'
+                }`}
+            >
+              <Settings className="w-5 h-5" />
+              <span className="text-xs">设置</span>
+            </button>
           </div>
-        )}
-      </div>
-      
+        </div>
+      )}
+
       {/* Toast 通知容器 */}
       <ToastContainer toasts={toasts} onClose={removeToast} isDarkMode={isDarkMode} />
-      
+
       {/* 移动端访问提示 */}
       <MobileWarning isDarkMode={isDarkMode} />
     </div>
