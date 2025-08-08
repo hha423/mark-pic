@@ -4,11 +4,22 @@
 
 ## 📸 预览
 
+#### 电脑端
+
 ![MarkPic 应用预览](./docs/preview.png)
 
 ![暗黑模式预览](./docs/dark-mode.png)
 
 ![样式设置面板](./docs/control-panel.jpg)
+
+
+#### 移动端
+
+![MarkPic 应用预览](./docs/mobile.jpg)
+
+![暗黑模式预览](./docs/dark-mobile.jpg)
+
+
 
 ## ✨ 功能特性
 
