@@ -18,6 +18,16 @@ export interface ImageConfig {
       direction: 'to-r' | 'to-l' | 'to-t' | 'to-b' | 'to-br' | 'to-tr' | 'to-bl' | 'to-tl'
     }
   }
+  textBackground: {
+    enabled: boolean
+    type: 'preset' | 'custom'
+    preset?: string
+    gradient?: {
+      from: string
+      to: string
+      direction: 'to-r' | 'to-l' | 'to-t' | 'to-b' | 'to-br' | 'to-tr' | 'to-bl' | 'to-tl'
+    }
+  }
   layout: {
     width: number
     padding: number
@@ -31,6 +41,11 @@ const defaultConfig: ImageConfig = {
   background: {
     type: 'preset',
     preset: 'bg-gradient-to-r from-blue-500 to-purple-600'
+  },
+  textBackground: {
+    enabled: false,
+    type: 'preset',
+    preset: 'bg-gradient-to-r from-blue-100 to-purple-200'
   },
   layout: {
     width: 800,
@@ -147,27 +162,52 @@ const poetry = {
 
   // 智能切换预设背景：当暗黑模式切换时，自动切换到对应的预设
   useEffect(() => {
+    let updatedConfig = { ...config }
+    let needsUpdate = false
+
+    // 切换卡片背景
     if (config.background.type === 'preset' && config.background.preset) {
       const lightIndex = LIGHT_GRADIENTS.findIndex((g: any) => g.class === config.background.preset)
       const darkIndex = DARK_GRADIENTS.findIndex((g: any) => g.class === config.background.preset)
 
       if (isDarkMode && lightIndex !== -1 && lightIndex < DARK_GRADIENTS.length) {
-        setConfig(prev => ({
-          ...prev,
-          background: {
-            ...prev.background,
-            preset: DARK_GRADIENTS[lightIndex].class
-          }
-        }))
+        updatedConfig.background = {
+          ...updatedConfig.background,
+          preset: DARK_GRADIENTS[lightIndex].class
+        }
+        needsUpdate = true
       } else if (!isDarkMode && darkIndex !== -1 && darkIndex < LIGHT_GRADIENTS.length) {
-        setConfig(prev => ({
-          ...prev,
-          background: {
-            ...prev.background,
-            preset: LIGHT_GRADIENTS[darkIndex].class
-          }
-        }))
+        updatedConfig.background = {
+          ...updatedConfig.background,
+          preset: LIGHT_GRADIENTS[darkIndex].class
+        }
+        needsUpdate = true
       }
+    }
+
+    // 切换文本背景
+    if (config.textBackground.enabled && config.textBackground.type === 'preset' && config.textBackground.preset) {
+      const lightIndex = LIGHT_GRADIENTS.findIndex((g: any) => g.class === config.textBackground.preset)
+      const darkIndex = DARK_GRADIENTS.findIndex((g: any) => g.class === config.textBackground.preset)
+
+      if (isDarkMode && lightIndex !== -1 && lightIndex < DARK_GRADIENTS.length) {
+        updatedConfig.textBackground = {
+          ...updatedConfig.textBackground,
+          preset: DARK_GRADIENTS[lightIndex].class
+        }
+        needsUpdate = true
+      } else if (!isDarkMode && darkIndex !== -1 && darkIndex < LIGHT_GRADIENTS.length) {
+        updatedConfig.textBackground = {
+          ...updatedConfig.textBackground,
+          preset: LIGHT_GRADIENTS[darkIndex].class
+        }
+        needsUpdate = true
+      }
+    }
+
+    // 只有在需要更新时才调用setConfig
+    if (needsUpdate) {
+      setConfig(updatedConfig)
     }
   }, [isDarkMode])
 
@@ -212,14 +252,11 @@ const poetry = {
           transform: 'scale(1)',
           transformOrigin: 'top left'
         },
-        filter: (node) => {
-          const linkElement = node as HTMLLinkElement
-          // 排除monaco编辑器相关元素
-          if (node.tagName === 'LINK' && linkElement.href && linkElement.href.includes('monaco-editor')) {
-            return false
-          }
-          return true
-        }
+        // filter: (node) => {
+        //   // node.classList.add('markpic-preview')
+        //   // 只捕获预览容器内的内容，避免捕获其他元素
+        //   return true
+        // }
       })
 
       // 下载图片的辅助函数

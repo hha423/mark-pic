@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Palette, Sliders } from 'lucide-react'
+import { Palette, Sliders, Type } from 'lucide-react'
 import type { ImageConfig } from '@/App'
 
 interface ControlPanelProps {
@@ -72,7 +72,7 @@ const DARK_GRADIENTS = [
   { name: '暗紫罗兰渐变', class: 'bg-gradient-to-bl from-violet-800 to-purple-900' },
   { name: '深金色渐变', class: 'bg-gradient-to-tl from-yellow-800 to-amber-900' },
   { name: '深银河渐变', class: 'bg-gradient-to-r from-slate-900 to-purple-900' },
-  { name: '暗樱花渐变', class: 'bg-gradient-to-b from-pink-800 to-rose-900' },
+  { name: '暗樱花渐变', class: 'bg-gradient-to-b from-pink-500 to-rose-900' },
   { name: '深极光渐变', class: 'bg-gradient-to-t from-green-800 to-blue-900' },
   { name: '暗珊瑚渐变', class: 'bg-gradient-to-br from-orange-800 to-pink-900' },
   { name: '深暮色渐变', class: 'bg-gradient-to-tr from-purple-900 to-pink-900' },
@@ -106,7 +106,7 @@ const GRADIENT_DIRECTIONS = [
 ]
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({ config, onChange, isDarkMode = false }) => {
-  const [activeTab, setActiveTab] = useState<'background' | 'layout'>('background')
+  const [activeTab, setActiveTab] = useState<'background' | 'textBackground' | 'layout'>('background')
 
   const PRESET_GRADIENTS = isDarkMode ? DARK_GRADIENTS : LIGHT_GRADIENTS
 
@@ -122,6 +122,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, onChange, is
     updateConfig({ layout: { ...config.layout, ...layout } })
   }
 
+  const updateTextBackground = (textBackground: Partial<ImageConfig['textBackground']>) => {
+    updateConfig({ textBackground: { ...config.textBackground, ...textBackground } })
+  }
+
   return (
     <div className={`h-full flex flex-col transition-colors duration-300 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
       {/* 标签页 */}
@@ -129,22 +133,34 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, onChange, is
         <button
           onClick={() => setActiveTab('background')}
           className={`flex-1 flex items-center justify-center space-x-1 md:space-x-2 py-3 text-xs md:text-sm font-medium transition-all duration-200 ${activeTab === 'background'
-              ? `text-blue-600 border-b-2 border-blue-600 ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`
-              : isDarkMode
-                ? 'text-gray-400 hover:text-gray-200'
-                : 'text-gray-500 hover:text-gray-700'
+            ? `text-blue-600 border-b-2 border-blue-600 ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`
+            : isDarkMode
+              ? 'text-gray-400 hover:text-gray-200'
+              : 'text-gray-500 hover:text-gray-700'
             }`}
         >
           <Palette className="w-3 h-3 md:w-4 md:h-4" />
           <span>背景样式</span>
         </button>
         <button
+          onClick={() => setActiveTab('textBackground')}
+          className={`flex-1 flex items-center justify-center space-x-1 md:space-x-2 py-3 text-xs md:text-sm font-medium transition-all duration-200 ${activeTab === 'textBackground'
+            ? `text-blue-600 border-b-2 border-blue-600 ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`
+            : isDarkMode
+              ? 'text-gray-400 hover:text-gray-200'
+              : 'text-gray-500 hover:text-gray-700'
+            }`}
+        >
+          <Type className="w-3 h-3 md:w-4 md:h-4" />
+          <span>文本背景</span>
+        </button>
+        <button
           onClick={() => setActiveTab('layout')}
           className={`flex-1 flex items-center justify-center space-x-1 md:space-x-2 py-3 text-xs md:text-sm font-medium transition-all duration-200 ${activeTab === 'layout'
-              ? `text-blue-600 border-b-2 border-blue-600 ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`
-              : isDarkMode
-                ? 'text-gray-400 hover:text-gray-200'
-                : 'text-gray-500 hover:text-gray-700'
+            ? `text-blue-600 border-b-2 border-blue-600 ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`
+            : isDarkMode
+              ? 'text-gray-400 hover:text-gray-200'
+              : 'text-gray-500 hover:text-gray-700'
             }`}
         >
           <Sliders className="w-3 h-3 md:w-4 md:h-4" />
@@ -164,10 +180,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, onChange, is
                 <button
                   onClick={() => updateBackground({ type: 'preset' })}
                   className={`px-3 py-2 text-sm rounded transition-all duration-200 ${config.background.type === 'preset'
-                      ? 'bg-blue-500 text-white shadow-md'
-                      : isDarkMode
-                        ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-blue-500 text-white shadow-md'
+                    : isDarkMode
+                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                 >
                   预设渐变
@@ -175,10 +191,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, onChange, is
                 <button
                   onClick={() => updateBackground({ type: 'custom' })}
                   className={`px-3 py-2 text-sm rounded transition-all duration-200 ${config.background.type === 'custom'
-                      ? 'bg-blue-500 text-white shadow-md'
-                      : isDarkMode
-                        ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-blue-500 text-white shadow-md'
+                    : isDarkMode
+                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                 >
                   自定义渐变
@@ -197,8 +213,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, onChange, is
                       key={index}
                       onClick={() => updateBackground({ preset: gradient.class })}
                       className={`relative h-12 rounded-lg overflow-hidden transition-all duration-200 transform hover:scale-105 ${gradient.class} ${config.background.preset === gradient.class
-                          ? 'ring-2 ring-blue-500 ring-offset-2 scale-105'
-                          : 'hover:ring-2 hover:ring-gray-300'
+                        ? 'ring-2 ring-blue-500 ring-offset-2 scale-105'
+                        : 'hover:ring-2 hover:ring-gray-300'
                         }`}
                       title={gradient.name}
                     >
@@ -271,10 +287,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, onChange, is
                           }
                         })}
                         className={`px-2 py-1 text-xs rounded transition-all duration-200 ${config.background.gradient?.direction === dir.value
-                            ? 'bg-blue-500 text-white'
-                            : isDarkMode
-                              ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-blue-500 text-white'
+                          : isDarkMode
+                            ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                       >
                         {dir.name}
@@ -283,6 +299,174 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ config, onChange, is
                   </div>
                 </div>
               </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'textBackground' && (
+          <div className="space-y-6">
+            {/* 启用/禁用文本背景 */}
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                }`}>文本背景</label>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => updateTextBackground({ enabled: true })}
+                  className={`px-3 py-2 text-sm rounded transition-all duration-200 ${config.textBackground.enabled
+                    ? 'bg-blue-500 text-white shadow-md'
+                    : isDarkMode
+                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  启用
+                </button>
+                <button
+                  onClick={() => updateTextBackground({ enabled: false })}
+                  className={`px-3 py-2 text-sm rounded transition-all duration-200 ${!config.textBackground.enabled
+                    ? 'bg-blue-500 text-white shadow-md'
+                    : isDarkMode
+                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  禁用
+                </button>
+              </div>
+            </div>
+
+            {/* 文本背景设置（仅在启用时显示） */}
+            {config.textBackground.enabled && (
+              <>
+                {/* 背景类型选择 */}
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>背景类型</label>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => updateTextBackground({ type: 'preset' })}
+                      className={`px-3 py-2 text-sm rounded transition-all duration-200 ${config.textBackground.type === 'preset'
+                        ? 'bg-blue-500 text-white shadow-md'
+                        : isDarkMode
+                          ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                    >
+                      预设渐变
+                    </button>
+                    <button
+                      onClick={() => updateTextBackground({ type: 'custom' })}
+                      className={`px-3 py-2 text-sm rounded transition-all duration-200 ${config.textBackground.type === 'custom'
+                        ? 'bg-blue-500 text-white shadow-md'
+                        : isDarkMode
+                          ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                    >
+                      自定义渐变
+                    </button>
+                  </div>
+                </div>
+
+                {/* 预设渐变 */}
+                {config.textBackground.type === 'preset' && (
+                  <div>
+                    <label className={`block text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}>选择预设</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 md:gap-3">
+                      {PRESET_GRADIENTS.map((gradient, index) => (
+                        <button
+                          key={index}
+                          onClick={() => updateTextBackground({ preset: gradient.class })}
+                          className={`relative h-12 rounded-lg overflow-hidden transition-all duration-200 transform hover:scale-105 ${gradient.class} ${config.textBackground.preset === gradient.class
+                            ? 'ring-2 ring-blue-500 ring-offset-2 scale-105'
+                            : 'hover:ring-2 hover:ring-gray-300'
+                            }`}
+                          title={gradient.name}
+                        >
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-white text-xs font-bold text-center px-2 py-1 rounded bg-black/40 backdrop-blur-sm border border-white/20">
+                              {gradient.name}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 自定义渐变 */}
+                {config.textBackground.type === 'custom' && (
+                  <div className="space-y-3 md:space-y-4">
+                    <div className="grid grid-cols-2 gap-2 md:gap-4">
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                          }`}>起始颜色</label>
+                        <input
+                          type="color"
+                          value={config.textBackground.gradient?.from || '#3b82f6'}
+                          onChange={(e) => updateTextBackground({
+                            gradient: {
+                              ...config.textBackground.gradient,
+                              from: e.target.value,
+                              to: config.textBackground.gradient?.to || '#8b5cf6',
+                              direction: config.textBackground.gradient?.direction || 'to-r'
+                            }
+                          })}
+                          className={`w-full h-8 rounded border ${isDarkMode ? 'border-gray-600' : 'border-gray-300'
+                            }`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                          }`}>结束颜色</label>
+                        <input
+                          type="color"
+                          value={config.textBackground.gradient?.to || '#8b5cf6'}
+                          onChange={(e) => updateTextBackground({
+                            gradient: {
+                              ...config.textBackground.gradient,
+                              from: config.textBackground.gradient?.from || '#3b82f6',
+                              to: e.target.value,
+                              direction: config.textBackground.gradient?.direction || 'to-r'
+                            }
+                          })}
+                          className={`w-full h-8 rounded border ${isDarkMode ? 'border-gray-600' : 'border-gray-300'
+                            }`}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                        }`}>渐变方向</label>
+                      <div className="grid grid-cols-3 gap-1 md:gap-2">
+                        {GRADIENT_DIRECTIONS.map((dir) => (
+                          <button
+                            key={dir.value}
+                            onClick={() => updateTextBackground({
+                              gradient: {
+                                ...config.textBackground.gradient,
+                                from: config.textBackground.gradient?.from || '#3b82f6',
+                                to: config.textBackground.gradient?.to || '#8b5cf6',
+                                direction: dir.value
+                              }
+                            })}
+                            className={`px-2 py-1 text-xs rounded transition-all duration-200 ${config.textBackground.gradient?.direction === dir.value
+                              ? 'bg-blue-500 text-white'
+                              : isDarkMode
+                                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                          >
+                            {dir.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

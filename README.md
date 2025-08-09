@@ -20,12 +20,20 @@
 ![暗黑模式预览](./docs/dark-mobile.jpg)
 
 
+### 支持 LaTeX Toc 时序图 等等
+
+![图例](./docs/markpic-1754718268637.jpg)
+
+
 
 ## ✨ 功能特性
 
 - 40+ 预设渐变背景，支持自定义渐变
 - 暗黑模式，跟随系统主题
-- Monaco Editor 编辑器，支持语法高亮
+- Markdown 编辑器，支持语法高亮
+- 支持流程图、甘特图、时序图（Mermaid语法）
+- 支持 [toc] 目录和 LaTeX 数学公式
+- 美化的表格样式，带边框和悬停效果
 - 实时预览，所见即所得
 - 响应式设计，支持移动端
 - 图片下载和剪贴板复制
@@ -53,8 +61,11 @@ pnpm build
 - **前端框架**: React 19 + TypeScript
 - **构建工具**: Vite
 - **样式框架**: TailwindCSS v4
-- **编辑器**: Monaco Editor
+- **编辑器**: @uiw/react-md-editor
 - **Markdown 渲染**: react-markdown + remark-gfm
+- **图表渲染**: mermaid.js
+- **数学公式**: KaTeX
+- **目录生成**: remark-toc
 - **代码高亮**: react-syntax-highlighter
 - **图片生成**: html-to-image
 - **包管理器**: pnpm
@@ -69,9 +80,16 @@ pnpm build
 ### 🎨 样式设置
 
 - 背景：40+ 预设渐变 + 自定义渐变
+- 文本背景：独立设置文本内容的背景样式
 - 布局：卡片宽度 400-1200px，内外边距可调
 - 字体：大小 12-24px，行距 1.0-2.0
 - 界面：拖拽调整编辑器/预览区域比例
+- 图表：支持多种图表类型
+  - 流程图：使用 \```mermaid 或 \```flow
+  - 时序图：使用 \```sequence
+  - 甘特图：使用 \```mermaid 语法
+- 数学公式：使用 $...$ 或 $$...$$
+- 目录：使用 [toc] 标记自动生成
 
 ## 🔧 开发
 
@@ -92,7 +110,7 @@ src/
 ### 🧩 核心组件
 
 - **App.tsx**: 主应用逻辑，状态管理和布局控制
-- **MarkdownEditor.tsx**: Monaco Editor 集成，支持折叠功能
+- **MarkdownEditor.tsx**: Markdown 编辑器集成，支持折叠功能
 - **ImagePreview.tsx**: Markdown 渲染和图片导出
 - **ControlPanel.tsx**: 样式控制面板，背景和布局设置
 - **Toast.tsx**: 通知系统，替代原生 alert
