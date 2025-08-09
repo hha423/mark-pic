@@ -107,13 +107,13 @@ export const MermaidRenderer = ({ content, isDarkMode }: MermaidRendererProps) =
     <div className={cn("my-4 overflow-auto")}>
       {renderState === 'loading' ? (
         <div className={cn(
-          "p-4 rounded",
+          "p-4 rounded text-center",
           isDarkMode ? "bg-gray-800" : "bg-gray-100"
         )}>
           正在渲染图表...
         </div>
       ) : (
-        <div dangerouslySetInnerHTML={{ __html: svgContent }} />
+        <div className="flex justify-center items-center" dangerouslySetInnerHTML={{ __html: svgContent }} />
       )}
     </div>
   )

@@ -92,7 +92,48 @@ const poetry = {
 
 ![e1604019539295.jpg](https://static-cse.canva.cn/blob/239388/e1604019539295.jpg)
 
-*愿君多采撷，此物最相思。*`)
+*愿君多采撷，此物最相思。*
+
+# 流程图测试
+
+## 测试流程图导出功能
+
+下面是一个测试流程图，用于验证导出功能是否正常：
+
+\`\`\`mermaid
+flowchart TD
+    A([开始]) --> B[处理]
+    B --> C{判断条件?}
+    C -->|是| D([结束])
+    C -->|否| B
+\`\`\`
+
+## 另一个流程图示例
+
+\`\`\`mermaid
+graph LR
+    A[用户输入] --> B{验证数据}
+    B -->|有效| C[保存数据]
+    B -->|无效| D[显示错误]
+    C --> E[返回成功]
+    D --> F[返回失败]
+\`\`\`
+
+## 时序图示例
+
+\`\`\`mermaid
+sequenceDiagram
+    participant U as 用户
+    participant S as 系统
+    participant D as 数据库
+    
+    U->>S: 提交请求
+    S->>D: 查询数据
+    D-->>S: 返回结果
+    S-->>U: 显示结果
+\`\`\`
+
+测试完成后，请检查导出的图片中流程图是否显示正常。`)
   const [config, setConfig] = useState<ImageConfig>(defaultConfig)
   const [showControls, setShowControls] = useState(false)
   const [editorCollapsed, setEditorCollapsed] = useState(false)
