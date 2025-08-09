@@ -244,7 +244,7 @@ const poetry = {
       const dataUrl = await toPng(element, {
         quality: 1,
         pixelRatio: 2,
-        skipFonts: true,
+        skipFonts: false,
         cacheBust: true,
         canvasWidth: element.offsetWidth,
         canvasHeight: element.offsetHeight,
