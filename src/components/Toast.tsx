@@ -88,26 +88,23 @@ export const Toast: React.FC<ToastProps> = ({
           {getIcon()}
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-medium ${
-            isDarkMode ? 'text-white' : 'text-gray-900'
-          }`}>
+          <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
             {title}
           </p>
           {message && (
-            <p className={`mt-1 text-sm ${
-              isDarkMode ? 'text-gray-300' : 'text-gray-600'
-            }`}>
+            <p className={`mt-1 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}>
               {message}
             </p>
           )}
         </div>
         <button
           onClick={() => onClose(id)}
-          className={`flex-shrink-0 ml-2 transition-colors ${
-            isDarkMode
+          className={`flex-shrink-0 ml-2 transition-colors ${isDarkMode
               ? 'text-gray-400 hover:text-gray-200'
               : 'text-gray-400 hover:text-gray-600'
-          }`}
+            }`}
         >
           <X className="w-4 h-4" />
         </button>
@@ -125,13 +122,13 @@ export const ToastContainer: React.FC<{
   onClose,
   isDarkMode = false
 }) => {
-  if (toasts.length === 0) return null
+    if (toasts.length === 0) return null
 
-  return (
-    <div className="fixed top-4 right-4 z-[9999] max-w-sm">
-      {toasts.map((toast) => (
-        <Toast key={toast.id} {...toast} onClose={onClose} isDarkMode={isDarkMode} />
-      ))}
-    </div>
-  )
-}
+    return (
+      <div className="fixed top-4 right-4 z-[9999] max-w-sm">
+        {toasts.map((toast) => (
+          <Toast key={toast.id} {...toast} onClose={onClose} isDarkMode={isDarkMode} />
+        ))}
+      </div>
+    )
+  }

@@ -34,8 +34,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       }`}>
       {/* 编辑器工具栏 */}
       <div className={`h-10 border-b flex items-center justify-between px-3 ${isDarkMode
-          ? 'border-gray-700 bg-gray-800'
-          : 'border-gray-200 bg-white'
+        ? 'border-gray-700 bg-gray-800'
+        : 'border-gray-200 bg-white'
         }`}>
         <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
           }`}>Markdown 编辑器</div>
@@ -43,8 +43,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
           <button
             onClick={onToggleCollapse}
             className={`p-1 rounded transition-colors ${isDarkMode
-                ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
+              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
               }`}
             title="折叠编辑器"
           >

@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
-import { toPng } from 'html-to-image'
 import { MarkdownEditor } from '@/components/MarkdownEditor'
 import { ImagePreview, type ImagePreviewRef } from '@/components/ImagePreview'
 import { Header } from '@/components/Header'
 import { ControlPanel, LIGHT_GRADIENTS, DARK_GRADIENTS } from '@/components/ControlPanel'
 import { ToastContainer, type ToastProps } from '@/components/Toast'
 import { MobileWarning } from '@/components/MobileWarning'
+import { ExportProgress } from '@/components/ExportProgress'
+import { exportElementToPng, downloadImage, copyImageToClipboard } from '@/utils/exportUtils'
 import { Edit, Eye, Settings, Copy, Download } from 'lucide-react'
 
 export interface ImageConfig {
@@ -67,7 +68,7 @@ const LAYOUT_CONSTANTS = {
 }
 
 function App() {
-  const [markdown, setMarkdown] = useState(`# 春江花月夜
+  const [markdown, setMarkdown] = useState(`## 春江花月夜
 
 > 春江潮水连海平，海上明月共潮生。
 > 滟滟随波千万里，何处春江无月明！
@@ -75,7 +76,7 @@ function App() {
 江流宛转绕芳甸，月照花林皆似霰。
 空里流霜不觉飞，汀上白沙看不见。
 
-## 诗韵悠长
+### 诗韵悠长
 
 - **江天一色无纤尘**，皎皎空中孤月轮
 - **江畔何人初见月**，江月何年初照人
@@ -94,9 +95,9 @@ const poetry = {
 
 *愿君多采撷，此物最相思。*
 
-# 流程图测试
+### 流程图测试
 
-## 测试流程图导出功能
+### 测试流程图导出功能
 
 下面是一个测试流程图，用于验证导出功能是否正常：
 
@@ -108,7 +109,7 @@ flowchart TD
     C -->|否| B
 \`\`\`
 
-## 另一个流程图示例
+### 另一个流程图示例
 
 \`\`\`mermaid
 graph LR
@@ -119,7 +120,7 @@ graph LR
     D --> F[返回失败]
 \`\`\`
 
-## 时序图示例
+### 时序图示例
 
 \`\`\`mermaid
 sequenceDiagram
@@ -132,8 +133,7 @@ sequenceDiagram
     D-->>S: 返回结果
     S-->>U: 显示结果
 \`\`\`
-
-测试完成后，请检查导出的图片中流程图是否显示正常。`)
+`)
   const [config, setConfig] = useState<ImageConfig>(defaultConfig)
   const [showControls, setShowControls] = useState(false)
   const [editorCollapsed, setEditorCollapsed] = useState(false)
@@ -142,6 +142,8 @@ sequenceDiagram
   const [showCollapseWarning, setShowCollapseWarning] = useState(false)
   const [collapseTimer, setCollapseTimer] = useState<NodeJS.Timeout | null>(null)
   const [toasts, setToasts] = useState<ToastProps[]>([])
+  const [exportProgress, setExportProgress] = useState<string>('')
+  const [isExporting, setIsExporting] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(() => {
     // 检查用户是否有保存的偏好设置
     const savedTheme = localStorage.getItem('markpic-theme')
@@ -281,64 +283,37 @@ sequenceDiagram
       const element = previewRef.current?.getPreviewElement()
       if (!element) return
 
-      // 确保捕获完整内容
-      const dataUrl = await toPng(element, {
-        quality: 1,
-        pixelRatio: 2,
-        skipFonts: false,
-        cacheBust: true,
-        canvasWidth: element.offsetWidth,
-        canvasHeight: element.offsetHeight,
-        style: {
-          transform: 'scale(1)',
-          transformOrigin: 'top left'
-        },
-        // filter: (node) => {
-        //   // node.classList.add('markpic-preview')
-        //   // 只捕获预览容器内的内容，避免捕获其他元素
-        //   return true
-        // }
-      })
+      setIsExporting(true)
+      setExportProgress('开始导出...')
 
-      // 下载图片的辅助函数
-      const downloadImage = () => {
-        const link = document.createElement('a')
-        link.download = `markpic-${Date.now()}.png`
-        link.href = dataUrl
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-      }
+      // 使用工具函数导出图片，带进度回调
+      const dataUrl = await exportElementToPng(element, isDarkMode, (step) => {
+        setExportProgress(step)
+      })
 
       // 根据操作类型和设备类型执行不同操作
       if (actionType === 'export' || isMobile) {
         // 导出操作或移动设备：直接下载
-        downloadImage()
+        downloadImage(dataUrl)
         showToast('success', actionType === 'export' ? '导出成功' : '图片已生成', '已保存到下载文件夹')
       } else {
         // 复制操作（桌面端）：尝试复制到剪贴板
-        try {
-          // 将data URL转换为blob
-          const response = await fetch(dataUrl)
-          const blob = await response.blob()
+        const copySuccess = await copyImageToClipboard(dataUrl)
 
-          // 复制到剪贴板
-          await navigator.clipboard.write([
-            new ClipboardItem({ 'image/png': blob })
-          ])
-
+        if (copySuccess) {
           showToast('success', '复制成功', '图片已复制到剪贴板！')
-        } catch (clipboardError) {
-          console.error('剪贴板操作失败:', clipboardError)
-
+        } else {
           // 剪贴板API失败时，提供下载选项作为备选
-          downloadImage()
+          downloadImage(dataUrl)
           showToast('warning', '复制失败，已下载图片', '请检查浏览器权限')
         }
       }
     } catch (error) {
       console.error(`${actionType === 'copy' ? '复制' : '导出'}失败:`, error)
       showToast('error', `${actionType === 'copy' ? '复制' : '导出'}失败`, '请重试或检查浏览器兼容性')
+    } finally {
+      setIsExporting(false)
+      setExportProgress('')
     }
   }
 
@@ -649,6 +624,13 @@ sequenceDiagram
           </div>
         </div>
       )}
+
+      {/* 导出进度提示 */}
+      <ExportProgress
+        isVisible={isExporting}
+        progress={exportProgress}
+        isDarkMode={isDarkMode}
+      />
 
       {/* Toast 通知容器 */}
       <ToastContainer toasts={toasts} onClose={removeToast} isDarkMode={isDarkMode} />

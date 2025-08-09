@@ -51,7 +51,7 @@ export const calculateBrightness = (color: string): number => {
   const r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16);
   const g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16);
   const b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6), 16);
-  
+
   // 使用相对亮度公式: 0.299*R + 0.587*G + 0.114*B
   return 0.299 * r + 0.587 * g + 0.114 * b;
 };

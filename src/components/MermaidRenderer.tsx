@@ -44,48 +44,48 @@ export const MermaidRenderer = ({ content, isDarkMode }: MermaidRendererProps) =
   const [renderState, setRenderState] = useState<'loading' | 'success' | 'error'>('loading')
   const [errorMessage, setErrorMessage] = useState<string>('')
   const [svgContent, setSvgContent] = useState<string>('')
-  
+
   useEffect(() => {
     setRenderState('loading')
-    
+
     let isMounted = true
-    
+
     const renderMermaid = async () => {
       try {
         // 重新初始化mermaid以确保配置正确
         mermaid.initialize(getMermaidConfig(isDarkMode, false))
-        
+
         // 生成一个唯一的ID
         const id = `mermaid-${Date.now()}`
-        
+
         // 使用mermaid.render方法
         const { svg } = await mermaid.render(id, content)
-        
+
         if (isMounted) {
           setSvgContent(svg)
           setRenderState('success')
         }
       } catch (error) {
         console.error('Mermaid渲染失败:', error)
-        
+
         if (isMounted) {
           setRenderState('error')
           setErrorMessage(error instanceof Error ? error.message : String(error))
         }
       }
     }
-    
+
     // 延迟一点时间再渲染
     const timerId = setTimeout(() => {
       renderMermaid()
     }, 300)
-    
+
     return () => {
       isMounted = false
       clearTimeout(timerId)
     }
   }, [content, isDarkMode])
-  
+
   // 渲染错误信息
   if (renderState === 'error') {
     return (
@@ -102,7 +102,7 @@ export const MermaidRenderer = ({ content, isDarkMode }: MermaidRendererProps) =
       </div>
     )
   }
-  
+
   return (
     <div className={cn("my-4 overflow-auto")}>
       {renderState === 'loading' ? (
@@ -126,7 +126,7 @@ export const MermaidRenderer = ({ content, isDarkMode }: MermaidRendererProps) =
 export const initializeMermaid = (isDarkMode: boolean) => {
   try {
     mermaid.initialize(getMermaidConfig(isDarkMode, true))
-    
+
     // 尝试运行一个简单的图表来验证初始化是否成功
     mermaid.parse('graph TD\nA-->B')
   } catch (error) {
@@ -142,7 +142,7 @@ export const initializeMermaid = (isDarkMode: boolean) => {
 export const processFlowContent = (content: string): string => {
   // 检查是否是flowchart.js语法（包含=>符号）
   const isFlowchartJs = content.includes('=>');
-  
+
   if (isFlowchartJs) {
     return `flowchart TD
     A([开始]) --> B[处理]
