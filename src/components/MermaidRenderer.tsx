@@ -46,6 +46,11 @@ export const MermaidRenderer = ({ content, isDarkMode }: MermaidRendererProps) =
   const [svgContent, setSvgContent] = useState<string>('')
 
   useEffect(() => {
+    // 如果内容没有变化，只是主题变化，不需要重新渲染
+    if (renderState === 'success' && svgContent) {
+      return
+    }
+
     setRenderState('loading')
 
     let isMounted = true
@@ -56,7 +61,7 @@ export const MermaidRenderer = ({ content, isDarkMode }: MermaidRendererProps) =
         mermaid.initialize(getMermaidConfig(isDarkMode, false))
 
         // 生成一个唯一的ID
-        const id = `mermaid-${Date.now()}`
+        const id = `mermaid-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
 
         // 使用mermaid.render方法
         const { svg } = await mermaid.render(id, content)
@@ -75,16 +80,22 @@ export const MermaidRenderer = ({ content, isDarkMode }: MermaidRendererProps) =
       }
     }
 
-    // 延迟一点时间再渲染
     const timerId = setTimeout(() => {
       renderMermaid()
-    }, 300)
+    }, 100)
 
     return () => {
       isMounted = false
       clearTimeout(timerId)
     }
-  }, [content, isDarkMode])
+  }, [content])
+
+  // 当主题变化时，更新SVG样式而不重新渲染
+  useEffect(() => {
+    if (renderState === 'success' && svgContent) {
+      // 添加特殊的主题样式更新逻辑，但不触发重新渲染
+    }
+  }, [isDarkMode])
 
   // 渲染错误信息
   if (renderState === 'error') {

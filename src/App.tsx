@@ -133,6 +133,14 @@ sequenceDiagram
     D-->>S: 返回结果
     S-->>U: 显示结果
 \`\`\`
+
+## ☕ 赞赏支持
+
+如果这个项目对你有帮助，欢迎请我喝杯咖啡 ☕
+
+<img src="./docs/reward-code.jpg" alt="赞赏码" width="300" />
+
+*"一杯咖啡，一声鼓励。"*
 `)
   const [config, setConfig] = useState<ImageConfig>(defaultConfig)
   const [showControls, setShowControls] = useState(false)

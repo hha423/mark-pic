@@ -105,54 +105,69 @@ export const exportElementToPng = async (
   isDarkMode: boolean,
   onProgress?: (step: string) => void
 ): Promise<string> => {
-  // 步骤1：修复 SVG 颜色
+  // 克隆元素以避免影响原始DOM
+  onProgress?.('正在准备导出...')
+  const clonedElement = element.cloneNode(true) as HTMLElement
+  
+  // 在克隆的元素上修复 SVG 颜色
   onProgress?.('正在优化图表样式...')
-  fixMermaidSVGColors(element, isDarkMode)
+  fixMermaidSVGColors(clonedElement, isDarkMode)
 
-  // 步骤2：等待样式应用
-  onProgress?.('正在应用样式...')
-  await new Promise(resolve => setTimeout(resolve, 500))
+  // 创建临时容器
+  const tempContainer = document.createElement('div')
+  tempContainer.style.position = 'absolute'
+  tempContainer.style.left = '-9999px'
+  tempContainer.style.top = '-9999px'
+  tempContainer.style.width = `${element.offsetWidth}px`
+  tempContainer.style.height = `${element.offsetHeight}px`
+  tempContainer.appendChild(clonedElement)
+  document.body.appendChild(tempContainer)
 
-  // 步骤3：再次修复确保样式生效
-  onProgress?.('正在确保样式生效...')
-  fixMermaidSVGColors(element, isDarkMode)
+  try {
+    // 等待样式应用
+    onProgress?.('正在应用样式...')
+    await new Promise(resolve => setTimeout(resolve, 200))
 
-  // 步骤4：生成图片
-  onProgress?.('正在生成图片...')
-  const dataUrl = await toPng(element, {
-    quality: 1,
-    pixelRatio: 2,
-    skipFonts: false,
-    cacheBust: true,
-    canvasWidth: element.offsetWidth,
-    canvasHeight: element.offsetHeight,
-    style: {
-      transform: 'scale(1)',
-      transformOrigin: 'top left'
-    },
-    filter: (node) => {
-      // 在过滤器中也修复 SVG 文字颜色
-      if (node.nodeName === 'svg') {
-        const svg = node as unknown as SVGSVGElement
-        const textElements = svg.querySelectorAll('text, tspan, textPath')
-        textElements.forEach((textEl) => {
-          const text = textEl as SVGElement
-          if (isDarkMode) {
-            text.setAttribute('fill', '#f9fafb')
-            text.style.fill = '#f9fafb'
-          } else {
-            text.setAttribute('fill', '#111827')
-            text.style.fill = '#111827'
-          }
-        })
+    // 生成图片
+    onProgress?.('正在生成图片...')
+    const dataUrl = await toPng(clonedElement, {
+      quality: 1,
+      pixelRatio: 2,
+      skipFonts: false,
+      cacheBust: true,
+      canvasWidth: element.offsetWidth,
+      canvasHeight: element.offsetHeight,
+      style: {
+        transform: 'scale(1)',
+        transformOrigin: 'top left'
+      },
+      filter: (node) => {
+        // 在过滤器中也修复 SVG 文字颜色
+        if (node.nodeName === 'svg') {
+          const svg = node as unknown as SVGSVGElement
+          const textElements = svg.querySelectorAll('text, tspan, textPath')
+          textElements.forEach((textEl) => {
+            const text = textEl as SVGElement
+            if (isDarkMode) {
+              text.setAttribute('fill', '#f9fafb')
+              text.style.fill = '#f9fafb'
+            } else {
+              text.setAttribute('fill', '#111827')
+              text.style.fill = '#111827'
+            }
+          })
+          return true
+        }
         return true
       }
-      return true
-    }
-  })
+    })
 
-  onProgress?.('导出完成！')
-  return dataUrl
+    onProgress?.('导出完成！')
+    return dataUrl
+  } finally {
+    // 清理临时容器
+    document.body.removeChild(tempContainer)
+  }
 }
 
 /**
