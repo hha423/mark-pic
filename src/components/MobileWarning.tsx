@@ -115,7 +115,7 @@ export const MobileWarning: React.FC<MobileWarningProps> = ({ isDarkMode = false
           <p className={`${isLandscape ? 'text-xs leading-tight' : 'text-xs sm:text-sm leading-relaxed'
             } ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
-            MarkPic 专为桌面端设计，需要较大屏幕空间提供最佳体验。
+            mark-pic 专为桌面端设计，需要较大屏幕空间提供最佳体验。
           </p>
 
           <div className={`${isLandscape ? 'p-1.5' : 'p-2 sm:p-3'

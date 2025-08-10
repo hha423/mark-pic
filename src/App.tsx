@@ -138,7 +138,7 @@ sequenceDiagram
 
 如果这个项目对你有帮助，欢迎请我喝杯咖啡 ☕
 
-<img src="https://github.com/alterem/MarkPic/raw/main/docs/reward-code.jpg" alt="赞赏码" width="300" />
+<img src="https://github.com/alterem/mark-pic/raw/main/docs/reward-code.jpg" alt="赞赏码" width="300" />
 
 *"一杯咖啡，一声鼓励。"*
 `)
@@ -154,7 +154,7 @@ sequenceDiagram
   const [isExporting, setIsExporting] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(() => {
     // 检查用户是否有保存的偏好设置
-    const savedTheme = localStorage.getItem('markpic-theme')
+    const savedTheme = localStorage.getItem('mark-pic-theme')
     if (savedTheme) {
       return savedTheme === 'dark'
     }
@@ -201,7 +201,7 @@ sequenceDiagram
 
     const handleChange = (e: MediaQueryListEvent) => {
       // 只有在用户没有手动设置过主题时才自动跟随系统
-      const savedTheme = localStorage.getItem('markpic-theme')
+      const savedTheme = localStorage.getItem('mark-pic-theme')
       if (!savedTheme) {
         setIsDarkMode(e.matches)
       }
@@ -265,7 +265,7 @@ sequenceDiagram
   const handleToggleDarkMode = () => {
     const newDarkMode = !isDarkMode
     setIsDarkMode(newDarkMode)
-    localStorage.setItem('markpic-theme', newDarkMode ? 'dark' : 'light')
+    localStorage.setItem('mark-pic-theme', newDarkMode ? 'dark' : 'light')
   }
 
   const showToast = (type: 'success' | 'error' | 'warning' | 'info', title: string, message?: string, duration = 3000) => {

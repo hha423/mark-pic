@@ -36,9 +36,9 @@ export const Header: React.FC<HeaderProps> = ({
         : 'bg-white border-gray-200'
         }`}>
         <div className="flex items-center space-x-2">
-          <img src="./mdtopic-icon.svg" alt="MarkPic" width="20" height="20" />
+          <img src="./mdtopic-icon.svg" alt="mark-pic" width="20" height="20" />
           <h1 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'
-            }`}>MarkPic</h1>
+            }`}>mark-pic</h1>
         </div>
 
         <div className="flex items-center space-x-1 sm:space-x-2">
@@ -71,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({
               ? 'text-gray-300 hover:text-white hover:bg-gray-700'
               : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
               }`}
-            title="关于 MarkPic"
+            title="关于 mark-pic"
           >
             <Info className="w-4 h-4" />
             <span className="hidden sm:inline ml-1">关于</span>
@@ -120,7 +120,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className={`flex items-center justify-between p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'
               }`}>
               <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'
-                }`}>关于 MarkPic</h2>
+                }`}>关于 mark-pic</h2>
               <button
                 onClick={handleClose}
                 className={`p-1 rounded-md transition-colors ${isDarkMode
@@ -134,10 +134,10 @@ export const Header: React.FC<HeaderProps> = ({
 
             <div className="p-4 space-y-4">
               <div className="flex items-center space-x-3">
-                <img src="./mdtopic-icon.svg" alt="MarkPic" width="32" height="32" />
+                <img src="./mdtopic-icon.svg" alt="mark-pic" width="32" height="32" />
                 <div>
                   <h3 className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-800'
-                    }`}>MarkPic</h3>
+                    }`}>mark-pic</h3>
                   <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
                     }`}>Markdown 转图片工具</p>
                 </div>
@@ -163,7 +163,7 @@ export const Header: React.FC<HeaderProps> = ({
 
               <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
                 <a
-                  href="https://github.com/alterem/MarkPic"
+                  href="https://github.com/alterem/mark-pic"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`inline-flex items-center space-x-2 px-3 py-2 text-sm rounded-md transition-colors ${isDarkMode

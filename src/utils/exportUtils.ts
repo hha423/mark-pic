@@ -177,7 +177,7 @@ export const exportElementToPng = async (
  */
 export const downloadImage = (dataUrl: string, filename?: string) => {
   const link = document.createElement('a')
-  link.download = filename || `markpic-${Date.now()}.png`
+  link.download = filename || `mark-pic-${Date.now()}.png`
   link.href = dataUrl
   document.body.appendChild(link)
   link.click()

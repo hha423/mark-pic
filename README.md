@@ -1,4 +1,4 @@
-# MarkPic
+# mark-pic
 
 将 Markdown 文本转换为精美图片的在线工具。左边写 Markdown，右边实时生成图片。
 
@@ -6,7 +6,7 @@
 
 #### 电脑端
 
-![MarkPic 应用预览](./docs/preview.png)
+![mark-pic 应用预览](./docs/preview.png)
 
 ![暗黑模式预览](./docs/dark-mode.png)
 
@@ -15,14 +15,14 @@
 
 #### 移动端
 
-![MarkPic 应用预览](./docs/mobile.jpg)
+![mark-pic 应用预览](./docs/mobile.jpg)
 
 ![暗黑模式预览](./docs/dark-mobile.jpg)
 
 
 ### 支持 LaTeX Toc 时序图 等等
 
-![图例](./docs/markpic-1754718268637.jpg)
+![图例](./docs/mark-pic-1754718268637.jpg)
 
 
 
