@@ -138,7 +138,7 @@ sequenceDiagram
 
 如果这个项目对你有帮助，欢迎请我喝杯咖啡 ☕
 
-<img src="/mark-pic/reward-code.jpg" alt="赞赏码" width="300" />
+<img src="reward-code.jpg" alt="赞赏码" width="300" />
 
 *"一杯咖啡，一声鼓励。"*
 `)
