@@ -1,103 +1,91 @@
 import { toPng } from 'html-to-image'
 
+type ProgressCallback = (step: string) => void
+type ThemeColors = {
+	text: string
+	background: string
+	stroke: string
+}
+
+const THEME_COLORS: Record<'light' | 'dark', ThemeColors> = {
+	light: {
+		text: '#111827',
+		background: '#f3f4f6',
+		stroke: '#9ca3af',
+	},
+	dark: {
+		text: '#f9fafb',
+		background: '#374151',
+		stroke: '#6b7280',
+	},
+}
+
 /**
  * 修复深色模式下 Mermaid SVG 文字颜色的函数
  * @param element 包含 SVG 的 HTML 元素
  * @param isDarkMode 是否为深色模式
  */
-export const fixMermaidSVGColors = (element: HTMLElement, isDarkMode: boolean) => {
-	const svgElements = element.querySelectorAll('svg')
+export const fixMermaidSVGColors = (element: HTMLElement, isDarkMode: boolean): void => {
+	const svgElements = element.querySelectorAll<SVGSVGElement>('svg')
+	const theme = isDarkMode ? 'dark' : 'light'
+	const colors = THEME_COLORS[theme]
+
 	svgElements.forEach((svg) => {
 		// 强制设置 SVG 的样式
-		if (isDarkMode) {
-			svg.style.color = '#f9fafb'
-		} else {
-			svg.style.color = '#111827'
-		}
+		svg.style.color = colors.text
 
 		// 查找所有可能的文本元素，使用更广泛的选择器
-		const allTextElements = svg.querySelectorAll('text, tspan, textPath, .label')
-		allTextElements.forEach((textEl) => {
-			const text = textEl as SVGElement
-			// 在深色模式下，强制设置文字颜色
-			if (isDarkMode) {
-				text.style.fill = '#f9fafb !important'
-				text.style.color = '#f9fafb !important'
-				text.setAttribute('fill', '#f9fafb')
-				text.setAttribute('color', '#f9fafb')
-				// 移除可能的黑色样式
-				text.style.removeProperty('fill')
-				text.style.fill = '#f9fafb'
-			} else {
-				text.style.fill = '#111827 !important'
-				text.style.color = '#111827 !important'
-				text.setAttribute('fill', '#111827')
-				text.setAttribute('color', '#111827')
-			}
+		const allTextElements = svg.querySelectorAll<SVGElement>('text, tspan, textPath, .label')
+		allTextElements.forEach((text) => {
+			// 设置文字颜色
+			text.style.fill = `${colors.text} !important`
+			text.style.color = `${colors.text} !important`
+			text.setAttribute('fill', colors.text)
+			text.setAttribute('color', colors.text)
+			// 移除可能的黑色样式
+			text.style.removeProperty('fill')
+			text.style.fill = colors.text
 		})
 
 		// 查找所有可能包含文字的元素
-		const allElements = svg.querySelectorAll('*')
-		allElements.forEach((el) => {
-			const element = el as SVGElement
+		const allElements = svg.querySelectorAll<SVGElement>('*')
+		allElements.forEach((element) => {
 			// 如果元素有文本内容，也设置颜色
-			if (element.textContent && element.textContent.trim()) {
-				if (isDarkMode) {
-					element.style.fill = '#f9fafb'
-					element.style.color = '#f9fafb'
-					element.setAttribute('fill', '#f9fafb')
-				} else {
-					element.style.fill = '#111827'
-					element.style.color = '#111827'
-					element.setAttribute('fill', '#111827')
-				}
+			if (element.textContent?.trim()) {
+				element.style.fill = colors.text
+				element.style.color = colors.text
+				element.setAttribute('fill', colors.text)
 			}
 		})
 
 		// 修复节点背景色
-		const nodeElements = svg.querySelectorAll('.node rect, .node circle, .node ellipse, .node polygon, rect, circle, ellipse, polygon')
-		nodeElements.forEach((nodeEl) => {
-			const node = nodeEl as SVGElement
+		const nodeElements = svg.querySelectorAll<SVGElement>('.node rect, .node circle, .node ellipse, .node polygon, rect, circle, ellipse, polygon')
+		nodeElements.forEach((node) => {
 			// 只修改没有文字的形状元素
-			if (!node.textContent || !node.textContent.trim()) {
-				if (isDarkMode) {
-					node.style.fill = '#374151'
-					node.setAttribute('fill', '#374151')
-					node.style.stroke = '#6b7280'
-					node.setAttribute('stroke', '#6b7280')
-				} else {
-					node.style.fill = '#f3f4f6'
-					node.setAttribute('fill', '#f3f4f6')
-					node.style.stroke = '#9ca3af'
-					node.setAttribute('stroke', '#9ca3af')
-				}
+			if (!node.textContent?.trim()) {
+				node.style.fill = colors.background
+				node.setAttribute('fill', colors.background)
+				node.style.stroke = colors.stroke
+				node.setAttribute('stroke', colors.stroke)
 			}
 		})
 
 		// 修复边线颜色
-		const edgeElements = svg.querySelectorAll('.edgePath path, path')
-		edgeElements.forEach((edgeEl) => {
-			const edge = edgeEl as SVGElement
-			if (isDarkMode) {
-				edge.style.stroke = '#9ca3af'
-				edge.setAttribute('stroke', '#9ca3af')
-				edge.style.fill = 'none'
-				edge.setAttribute('fill', 'none')
-			} else {
-				edge.style.stroke = '#6b7280'
-				edge.setAttribute('stroke', '#6b7280')
-				edge.style.fill = 'none'
-				edge.setAttribute('fill', 'none')
-			}
+		const edgeElements = svg.querySelectorAll<SVGElement>('.edgePath path, path')
+		edgeElements.forEach((edge) => {
+			edge.style.stroke = colors.stroke
+			edge.setAttribute('stroke', colors.stroke)
+			edge.style.fill = 'none'
+			edge.setAttribute('fill', 'none')
 		})
 	})
 }
 
 // ---------------- 图片处理与加载辅助 ----------------
 
-const isDataUrl = (url: string) => url.startsWith('data:')
+const isDataUrl = (url: string): boolean => url.startsWith('data:')
 
-const isSameOrigin = (url: string) => {
+const isSameOrigin = (url: string): boolean => {
 	try {
 		const parsed = new URL(url, window.location.href)
 		return parsed.origin === window.location.origin
@@ -110,7 +98,7 @@ const isSameOrigin = (url: string) => {
  * 使用 CORS 代理重写外链图片 URL，以避免画布污染。
  * 说明：使用 wsrv.nl 图片代理，返回带 CORS 头的图片。
  */
-const rewriteWithCorsProxy = (url: string) => {
+const rewriteWithCorsProxy = (url: string): string => {
 	// 保持原始协议与域名，交给代理服务抓取
 	return `https://images.weserv.nl/?url=${encodeURIComponent(url)}`
 }
@@ -119,21 +107,21 @@ const rewriteWithCorsProxy = (url: string) => {
  * 为克隆的节点中的 <img> 元素设置 CORS 属性，并为外链设置代理。
  * 返回一个 Promise，等待所有图片加载完成（或超时忽略错误）。
  */
-const prepareAndWaitForImages = (root: HTMLElement, timeoutMs = 8000) => {
-	const images = Array.from(root.querySelectorAll('img')) as HTMLImageElement[]
-	if (images.length === 0) return Promise.resolve()
+const prepareAndWaitForImages = async (root: HTMLElement, timeoutMs = 8000): Promise<void> => {
+	const images = root.querySelectorAll<HTMLImageElement>('img')
+	if (images.length === 0) return
 
-	const loaders = images.map((img) => {
+	const loaders = Array.from(images).map((img) => {
 		try {
 			// 强制设置跨域属性，减小被污染概率
 			img.setAttribute('crossorigin', 'anonymous')
 			// 某些站点基于 Referer 防盗链，关闭 Referer
-			;(img as any).referrerPolicy = 'no-referrer'
+			img.referrerPolicy = 'no-referrer'
 
 			const src = img.getAttribute('src') || ''
 			if (!src || isDataUrl(src)) {
 				// 空或已是 data URL，直接跳过
-				return Promise.resolve(undefined)
+				return Promise.resolve()
 			}
 
 			// 解析为绝对 URL 以判断同源
@@ -152,16 +140,16 @@ const prepareAndWaitForImages = (root: HTMLElement, timeoutMs = 8000) => {
 			// 忽略单个图片处理异常
 		}
 
-		return new Promise((resolve) => {
+		return new Promise<void>((resolve) => {
 			let done = false
-			const finish = () => {
+			const finish = (): void => {
 				if (done) return
 				done = true
-				resolve(undefined)
+				resolve()
 			}
 
 			// 若图片已完成加载则立即返回
-			if ((img as any).complete && (img as any).naturalWidth > 0) {
+			if (img.complete && img.naturalWidth > 0) {
 				return finish()
 			}
 
@@ -171,7 +159,7 @@ const prepareAndWaitForImages = (root: HTMLElement, timeoutMs = 8000) => {
 		})
 	})
 
-	return Promise.allSettled(loaders).then(() => undefined)
+	await Promise.allSettled(loaders)
 }
 
 /**
@@ -184,7 +172,7 @@ const prepareAndWaitForImages = (root: HTMLElement, timeoutMs = 8000) => {
 export const exportElementToPng = async (
 	element: HTMLElement,
 	isDarkMode: boolean,
-	onProgress?: (step: string) => void
+	onProgress?: ProgressCallback
 ): Promise<string> => {
 	// 克隆元素以避免影响原始DOM
 	onProgress?.('正在准备导出...')
@@ -211,7 +199,7 @@ export const exportElementToPng = async (
 
 		// 等待样式应用
 		onProgress?.('正在应用样式...')
-		await new Promise(resolve => setTimeout(resolve, 200))
+		await new Promise<void>(resolve => setTimeout(resolve, 200))
 
 		// 生成图片
 		onProgress?.('正在生成图片...')
@@ -226,22 +214,17 @@ export const exportElementToPng = async (
 				transform: 'scale(1)',
 				transformOrigin: 'top left'
 			},
-			filter: (node) => {
+			filter: (node): boolean => {
 				// 在过滤器中也修复 SVG 文字颜色
 				if (node.nodeName === 'svg') {
 					const svg = node as unknown as SVGSVGElement
-					const textElements = svg.querySelectorAll('text, tspan, textPath')
-					textElements.forEach((textEl) => {
-						const text = textEl as SVGElement
-						if (isDarkMode) {
-							text.setAttribute('fill', '#f9fafb')
-							text.style.fill = '#f9fafb'
-						} else {
-							text.setAttribute('fill', '#111827')
-							text.style.fill = '#111827'
-						}
+					const textElements = svg.querySelectorAll<SVGElement>('text, tspan, textPath')
+					const colors = THEME_COLORS[isDarkMode ? 'dark' : 'light']
+					
+					textElements.forEach((text) => {
+						text.setAttribute('fill', colors.text)
+						text.style.fill = colors.text
 					})
-					return true
 				}
 				return true
 			}
@@ -260,7 +243,7 @@ export const exportElementToPng = async (
  * @param dataUrl 图片的 data URL
  * @param filename 文件名（可选）
  */
-export const downloadImage = (dataUrl: string, filename?: string) => {
+export const downloadImage = (dataUrl: string, filename?: string): void => {
 	const link = document.createElement('a')
 	link.download = filename || `mark-pic-${Date.now()}.png`
 	link.href = dataUrl
