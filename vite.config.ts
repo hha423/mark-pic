@@ -12,7 +12,7 @@ export default defineConfig({
     },
   },
   // base: process.env.NODE_ENV === 'production' ? '/mark-pic/' : '/',
-  base: '/',
+  base: './',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
